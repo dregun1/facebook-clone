@@ -14,7 +14,7 @@ const User = require("./models/User");
 const helmet = require('helmet');
 const hpp = require('hpp');
 
-const port = process.env.PORT;
+const port = process.env.PORT || 443;
 
 const onlineChatUsers = {};
 
