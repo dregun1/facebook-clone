@@ -1,5 +1,5 @@
 # Node.js의 공식 LTS 버전 이미지 사용
-FROM node:20-lts
+FROM node:lts
 
 # 앱 디렉터리 생성
 WORKDIR /usr/src/app
