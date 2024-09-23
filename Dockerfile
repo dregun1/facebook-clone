@@ -12,7 +12,7 @@ RUN npm install --only=production
 COPY . .
 
 # 앱 실행에 필요한 포트 설정
-EXPOSE 8080
+EXPOSE 80
 
 # 앱 실행 명령어
 CMD ["npm", "start"]
