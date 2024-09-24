@@ -13,17 +13,17 @@ const Post = require("./models/Post");
 const User = require("./models/User");
 const helmet = require('helmet');
 const hpp = require('hpp');
-
+dotenv.config();
 const port = process.env.PORT;
 
 const onlineChatUsers = {};
 
-dotenv.config();
+
 
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
 const app = express();
-const mongoURI = `mongodb://${process.env.COSMOSDB_USER}:${process.env.COSMOSDB_PASSWORD}@${process.env.COSMOSDB_HOST}:${process.env.COSMOSDB_PORT}/${process.env.COSMOSDB_DBNAME}?ssl=true&retrywrites=false`;
+
 
 
 app.set("view engine", "ejs");
