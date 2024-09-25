@@ -66,7 +66,7 @@ app.use(express.static(path.join(__dirname, 'public')));  // 수정: 정적 파�
 
 /* MongoDB Connection */
 mongoose
-    .connect(process.env.MONGODB_URI, {
+    .connect("mongodb://cccrapp-server:l1M6BITbyavCW5sbB2TnJ83CKq26iw3zIIFVmEyMfMLaWbnXxAdKEAiknK3IJ0XDMvkvyLSPAKvPACDbJQ8ZIA==@cccrapp-server.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@cccrapp-server@", {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         connectTimeoutMS: 10000, // 타임아웃 설정
