@@ -18,13 +18,9 @@ const port = process.env.PORT;
 
 const onlineChatUsers = {};
 
-
-
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
 const app = express();
-
-
 
 app.set("view engine", "ejs");
 
