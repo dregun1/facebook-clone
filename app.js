@@ -1,6 +1,6 @@
 const express = require("express");
-const morgan = require('morgan')
-const winston = require('./config/winston')
+const morgan = require('morgan');
+const winston = require('./config/winston');
 const mongoose = require("mongoose");
 const session = require("express-session");
 const cookieParser = require('cookie-parser');
@@ -13,18 +13,16 @@ const Post = require("./models/Post");
 const User = require("./models/User");
 const helmet = require('helmet');
 const hpp = require('hpp');
+const path = require('path');  // 추가: 정적 파일 경로를 위해 필요
+
 dotenv.config();
 const port = process.env.PORT;
 
 const onlineChatUsers = {};
 
-
-
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
 const app = express();
-
-
 
 app.set("view engine", "ejs");
 
@@ -37,7 +35,7 @@ if (process.env.NODE_ENV === 'production') {
 } else {
     app.use(morgan('dev'));
 }
-app.use(cookieParser(process.env.SECRET))
+app.use(cookieParser(process.env.SECRET));
 const sessOptions = {
     secret: process.env.SECRET,
     resave: false,
@@ -48,8 +46,8 @@ const sessOptions = {
     },
 };
 if (process.env.NODE_ENV === 'production') {
-    // sessOptions.proxy = true;
-    // sessOptions.cookie.secure = true;
+    sessOptions.proxy = true; // production에서 reverse proxy 설정
+    sessOptions.cookie.secure = true; // production에서 HTTPS를 통해서만 쿠키 전송
 }
 app.use(session(sessOptions));
 app.use(flash());
@@ -64,13 +62,15 @@ passport.deserializeUser(User.deserializeUser());
 /* Middleware */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
-
-
+app.use(express.static(path.join(__dirname, 'public')));  // 수정: 정적 파일 경로 설정
 
 /* MongoDB Connection */
 mongoose
-    .connect(process.env.MONGODB_URI)
+    .connect(process.env.MONGODB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        connectTimeoutMS: 10000, // 타임아웃 설정
+    })
     .then(() => {
         console.log("Connected to MongoDB");
     })
@@ -117,15 +117,19 @@ room.on("connection", socket => {
         delete onlineChatUsers[socket.name];
         room.emit("updateUserList", Object.keys(onlineChatUsers));
         winston.info(`user ${socket.name} disconnected`);
-    }); 
+    });
 
     socket.on("chat", data => {
         winston.info(data);
         if (data.to === "Global Chat") {
             room.emit("chat", data);
         } else if (data.to) {
-            room.to(onlineChatUsers[data.name]).emit("chat", data);
-            room.to(onlineChatUsers[data.to]).emit("chat", data);
+            if (onlineChatUsers[data.name] && onlineChatUsers[data.to]) {
+                room.to(onlineChatUsers[data.name]).emit("chat", data);
+                room.to(onlineChatUsers[data.to]).emit("chat", data);
+            } else {
+                winston.error("User not found in onlineChatUsers");
+            }
         }
     });
 });
