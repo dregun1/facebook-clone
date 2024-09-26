@@ -2,17 +2,13 @@ const express = require("express");
 const User = require("../models/User");
 const passport = require("passport");
 const multer = require("multer");
-const cloudinary = require("cloudinary");
+const { BlobServiceClient } = require("@azure/storage-blob");
 const router = express.Router();
 const csrf = require('csurf');
 const csrfProtection = csrf({ cookie: true });
 
 /* Multer setup */
-const storage = multer.diskStorage({
-    filename: (req, file, callback) => {
-        callback(null, Date.now() + file.originalname);
-    }
-});
+const storage = multer.memoryStorage(); // 메모리 스토리지로 변경
 
 const imageFilter = (req, file, callback) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
@@ -23,12 +19,10 @@ const imageFilter = (req, file, callback) => {
 
 const upload = multer({ storage: storage, fileFilter: imageFilter });
 
-/* Cloudinary setup */
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
+
+/* Azure Blob Storage setup */
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
+const containerClient = blobServiceClient.getContainerClient(process.env.AZURE_STORAGE_CONTAINER_NAME);
 
 /* Middleware */
 const isLoggedIn = (req, res, next) => {
@@ -47,16 +41,29 @@ router.post("/user/register", upload.single("image"), async (req, res) => {
         let newUser = new User({
             username: req.body.username,
             firstName: req.body.firstname,
-            lastName: req.body.lastname
+            lastName: req.body.lastname,
+            profile: process.env.DEFAULT_PROFILE_PIC // 기본 프로필 사진으로 초기화
         });
+
         if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            newUser.profile = result.secure_url;
-            return createUser(newUser, req.body.password, req, res);
-        } else {
-            newUser.profile = process.env.DEFAULT_PROFILE_PIC;
-            return createUser(newUser, req.body.password, req, res);
-        }
+            // Azure Storage에 파일 업로드
+            const blobName = `${Date.now()}_${req.file.originalname}`; // 고유한 blob 이름 생성
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+            try {
+                await blockBlobClient.upload(req.file.buffer, req.file.size);
+                // 업로드한 이미지 URL을 사용자 프로필에 저장
+                newUser.profile = `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${process.env.AZURE_STORAGE_CONTAINER_NAME}/${blobName}`;
+            } catch (err) {
+                req.flash("error", "Error uploading image to Azure Storage");
+                return res.redirect("/"); // 에러 발생 시 홈으로 리다이렉트
+            }
+        } // req.file이 없으면 기본 프로필 이미지 사용
+
+        return createUser(newUser, req.body.password, req, res);
+    } else {
+        req.flash("error", "모든 필드를 입력해야 합니다."); // 모든 필드가 입력되지 않은 경우 에러 메시지
+        return res.redirect("/user/register"); // 에러 발생 시 등록 페이지로 리다이렉트
     }
 });
 
