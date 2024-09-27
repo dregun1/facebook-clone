@@ -4,7 +4,7 @@
 <div class="row">
     <% users.forEach(function(person) { %> 
         <div class="card col-sm-3">
-            <img class="card-img-top" src="<%= person.profile ? person.profile : '/images/profile.png' %>" alt="Profile">
+            <img class="card-img-top profile-image" src="<%= person.profile ? person.profile : '/images/profile.png' %>" alt="Profile">
             <div class="card-body">
                 <h4 class="card-title"><%= person.firstName + " " + person.lastName %></h4>
                 <p class="card-text">Test</p>
