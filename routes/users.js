@@ -19,7 +19,6 @@ const imageFilter = (req, file, callback) => {
 
 const upload = multer({ storage: storage, fileFilter: imageFilter });
 
-
 /* Azure Blob Storage setup */
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 const containerClient = blobServiceClient.getContainerClient(process.env.AZURE_STORAGE_CONTAINER_NAME);
