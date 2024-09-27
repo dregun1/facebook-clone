@@ -130,4 +130,62 @@ router.post("/post/:id/comments/new", isLoggedIn, async (req, res) => {
     }
 });
 
+// Like a post
+router.get("/post/:id/like", isLoggedIn, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const post = await Post.findById(req.params.id);
+
+        // Check if the user has already liked the post
+        if (user.liked_posts.includes(post._id)) {
+            req.flash("error", "You already liked this post");
+            return res.redirect("back");
+        }
+
+        // Increment the post's like count
+        post.likes += 1;
+        await post.save();
+
+        // Add the post to the user's liked posts
+        user.liked_posts.push(post._id);
+        await user.save();
+
+        req.flash("success", "Successfully liked the post");
+        res.redirect("back");
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "There has been an error liking the post");
+        res.redirect("back");
+    }
+});
+
+// Like a comment
+router.get("/post/:postid/comments/:commentid/like", isLoggedIn, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const comment = await Comment.findById(req.params.commentid);
+
+        // Check if the user has already liked the comment
+        if (user.liked_comments.includes(comment._id)) {
+            req.flash("error", "You already liked this comment");
+            return res.redirect("back");
+        }
+
+        // Increment the comment's like count
+        comment.likes += 1;
+        await comment.save();
+
+        // Add the comment to the user's liked comments
+        user.liked_comments.push(comment._id);
+        await user.save();
+
+        req.flash("success", "Successfully liked the comment");
+        res.redirect("back");
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "There has been an error liking the comment");
+        res.redirect("back");
+    }
+});
+
 module.exports = router;
