@@ -1,11 +1,14 @@
 
 <h1>실습기간 : 09/09 ~ 09/30 </h1>
-참조 : Node.js로 서버 만들기, 박민경 지음
+
+<br>
 
 
 
 <details>
-<summary  style="font-size:1.5em;">ppt 보기.</summary>
+<summary  style="font-size:1.5em;">ppt 보기</summary>
+  
+  <p>참조 : Node.js로 서버 만들기, 박민경 지음</p>
   <img width="1250" alt="슬라이드1" src="https://github.com/user-attachments/assets/c9aacd8b-3bda-48de-97c1-30378e4084ca">
   <img width="1250" alt="슬라이드2" src="https://github.com/user-attachments/assets/4270e5e4-6a06-4404-b1c5-ab1b108fe95e">
   <img width="1250" alt="슬라이드3" src="https://github.com/user-attachments/assets/c9acd97a-ab0a-444f-8d85-f35352fe9868">
